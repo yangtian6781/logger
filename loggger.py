@@ -6,12 +6,12 @@ import os
 import torch
 
 class Loggger:
-    def __init__(self, root='./', epoch=1, iter_per_epoch=1, log_per_iter=50, multi_node=False, logger = logging.getLogger('train')):
+    def __init__(self, root='./', epoch=1, iter_per_epoch=1, log_per_iter=50, multi_node=False, logger = logging.getLogger('train'), dictory_name='hello'):
         self.root_dirctory = root+'work_dir/'
-        self.project = self.root_dirctory + f"{datetime.datetime.now().strftime('%Y-%m-%d')}/"
+        self.project = self.root_dirctory + dictory_name + '/'
         if not os.path.exists(self.project):
             os.makedirs(self.project)
-        self.logs = self.project + 'logs.log'
+        self.logs = self.project + f"{datetime.datetime.now().strftime('%Y-%m-%d')}.log"
         self.epoch = epoch
         self.current_epoch = 1
         self.iter_per_epoch = iter_per_epoch
