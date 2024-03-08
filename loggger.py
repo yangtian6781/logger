@@ -4,9 +4,10 @@ from collections import defaultdict
 from typing import Dict
 import os
 import torch
+from torch.distributed import get_rank
 
 class Loggger:
-    def __init__(self, root='./', epoch=1, iter_per_epoch=1, log_per_iter=50, multi_node=False, logger = logging.getLogger('train'), dictory_name='hello'):
+    def __init__(self, root='./', epoch=1, iter_per_epoch=1, log_per_iter=50, multi_rank=False, logger = logging.getLogger('train'), dictory_name='hello'):
         self.root_dirctory = root+'work_dir/'
         self.project = self.root_dirctory + dictory_name + '/'
         if not os.path.exists(self.project):
@@ -19,7 +20,9 @@ class Loggger:
         self.logger = logger
         self.log_per_iter = log_per_iter
         self.current_iter = 0
-        self.mulit_node = multi_node
+        self.multi_rank = multi_rank
+        if self.multi_rank:
+            self.rank = get_rank()
         self.logger.setLevel(logging.INFO)
         self.fh = logging.FileHandler(filename=self.logs,encoding="utf8")
         self.fh.setLevel(logging.INFO)
@@ -33,8 +36,6 @@ class Loggger:
     
     
     def process_buffer(self):
-        # for k, v in self.buffer:
-        #     b = sum(v)/self.log_per_iter
         a = [f'{k}:{float(sum(v)/len(v)):.5f}' for k,v in self.buffer.items()]
         for i in self.buffer:
             self.buffer[i].clear()
@@ -45,9 +46,10 @@ class Loggger:
         self.process_input(message)
         self.iterations += 1
         self.current_iter += 1
-        # if self.mulit_node:
-        #     rank = torch.distribued
-        prefix = f"epoch:[{f'{self.current_epoch}/{self.epoch}':8}][{f'{self.current_iter}/{self.iter_per_epoch}':13}]     "
+        if self.multi_rank:
+            prefix = f"epoch:[{f'{self.current_epoch}/{self.epoch}':8}][{f'{self.current_iter}/{self.iter_per_epoch}':13}] rank:{self.rank}   "
+        else:
+            prefix = f"epoch:[{f'{self.current_epoch}/{self.epoch}':8}][{f'{self.current_iter}/{self.iter_per_epoch}':13}]   "
         if self.current_iter%self.log_per_iter == 0:
             self.logger.info(prefix + self.process_buffer(), **kwargs)
         if self.current_iter == self.iter_per_epoch:
@@ -56,4 +58,8 @@ class Loggger:
             self.current_epoch += 1
             
     def save(self, text, name):
-        torch.save(text, f'{self.project}'+f'{name}.pt')
+        if self.multi_rank:
+            if self.rank == 0:
+                torch.save(text, f'{self.project}'+f'{name}.pt')
+        else:
+            torch.save(text, f'{self.project}'+f'{name}.pt')
