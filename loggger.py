@@ -9,7 +9,7 @@ from torch.distributed import get_rank
 class Loggger:
     def __init__(self, root='./', epoch=1, iter_per_epoch=1, log_per_iter=50, multi_rank=False, logger = logging.getLogger('train'), dictory_name='hello'):
         self.root_dirctory = root+'work_dir/'
-        self.project = self.root_dirctory + dictory_name + '/'
+        self.project_path = self.root_dirctory + dictory_name + '/'
         if not os.path.exists(self.project):
             os.makedirs(self.project)
         self.logs = self.project + f"{datetime.datetime.now().strftime('%Y-%m-%d')}.log"
@@ -56,10 +56,3 @@ class Loggger:
             self.logger.info(prefix + self.process_buffer(), **kwargs)
             self.current_iter=0
             self.current_epoch += 1
-            
-    def save(self, text, name):
-        if self.multi_rank:
-            if self.rank == 0:
-                torch.save(text, f'{self.project}'+f'{name}.pt')
-        else:
-            torch.save(text, f'{self.project}'+f'{name}.pt')
