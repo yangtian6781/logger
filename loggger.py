@@ -47,7 +47,7 @@ class Loggger:
         self.process_input(message)
         self.iterations += 1
         self.current_iter += 1
-        self.lr = f'     lr: {self.optimizer.param_groups[0]['lr']}'
+        self.lr = f'     lr:{self.optimizer.param_groups[0]['lr']}'
         if self.multi_rank:
             prefix = f"epoch:[{f'{self.current_epoch}/{self.epoch}':8}][{f'{self.current_iter}/{self.iter_per_epoch}':13}] rank:{self.rank}   "
         else:
