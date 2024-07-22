@@ -6,7 +6,7 @@ def draw_loss_curve(log_path, key_strs=['loss']):
         for key_str in key_strs:
             a = filter(lambda x:'loss' in x or 'lr' in x, a)
             a = list(map(lambda x:x[:-1], a))
-            pattern_loss = re.compile(f'{key_str}:(\d+\.\d+)')
+            pattern_loss = re.compile(f'{key_str}: *(\d+\.\d+)')
             loss = list(map(lambda x:float(pattern_loss.findall(x)[0]), a))
             key_str = key_str.title()
             plt.plot(loss)
